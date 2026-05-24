@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="privacy_intro">Karter cihazınızda çalışır. Bu özet uygulamanın neye eriştiğini ve nedenini açıklar.</string>
+    <string name="privacy_section_location">Konum</string>
+    <string name="privacy_body_location">Dashboard hava durumu ve GPS hızı için kullanılır. Koordinatlar yalnızca hava tahmini için Open-Meteo\'ya gönderilir. Konumunuzu saklayan bir sunucu işletmiyoruz.</string>
+    <string name="privacy_section_phone">Kişiler ve aramalar</string>
+    <string name="privacy_body_phone">İsteğe bağlı. Yerleşik Telefon ekranı mümkün olduğunda kişi ve arama geçmişini okur; giden aramaları eşleşmiş telefon üzerinden Bluetooth hands-free ile başlatabilir. Veriler cihazda kalır.</string>
+    <string name="privacy_section_notifications">Bildirim erişimi</string>
+    <string name="privacy_body_notifications">İsteğe bağlı. Yalnızca Çalıyor widget\'ı için aktif medya oturumu bilgisi (parça, sanatçı, kapak) okunur. Mesaj veya bildirim metni toplanmaz.</string>
+    <string name="privacy_section_bluetooth">Bluetooth</string>
+    <string name="privacy_body_bluetooth">Dashboard\'da bağlı cihaz adlarını gösterir. Ses veya mesaj içeriği okunmaz.</string>
+    <string name="privacy_section_network">Ağ</string>
+    <string name="privacy_body_network">Hava istekleri api.open-meteo.com adresine gider. Hava yenilemeden önce interneti doğrulamak için küçük bir bağlantı kontrolü yapılabilir.</string>
+    <string name="privacy_section_storage">Cihazda saklama</string>
+    <string name="privacy_body_storage">Tema, dock kısayolları, gizli uygulamalar ve kurulum durumu Android DataStore ile yerelde saklanır. Cihazınızda yedekleme açıksa tercihler yedeklenebilir.</string>
+</resources>

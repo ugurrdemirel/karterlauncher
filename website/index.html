@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Karter — Android head-unit home launcher with driving dashboard, dock, and built-in phone screen.">
+  <title>Karter — Android head-unit launcher</title>
+  <link rel="icon" href="images/logo.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="logo" href="index.html">
+        <img class="logo-img" src="images/logo.jpg" alt="Karter Launcher" width="80" height="80">
+      </a>
+      <nav class="site-nav" aria-label="Site">
+        <a href="index.html" aria-current="page">Home</a>
+        <a href="privacy.html">Privacy</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <section class="hero">
+        <img
+          class="hero-logo"
+          src="images/logo.jpg"
+          alt="Karter Launcher"
+          width="512"
+          height="512"
+        >
+        <h1 class="visually-hidden">Karter Launcher</h1>
+        <p class="tagline">
+          A landscape-first Android home launcher for head units and tablets — dashboard, dock, and apps built for driving.
+        </p>
+        <div class="cta-row">
+          <a
+            class="btn"
+            href="https://play.google.com/store/apps/details?id=com.karterlauncher"
+            rel="noopener noreferrer"
+          >Get it on Google Play</a>
+          <a class="btn btn-secondary" href="privacy.html">Privacy policy</a>
+        </div>
+      </section>
+
+      <section class="card-grid" aria-label="Features">
+        <article class="card">
+          <h2>Dashboard</h2>
+          <p>Weather, GPS speed, Bluetooth status, media controls, and volume — at a glance while you drive.</p>
+        </article>
+        <article class="card">
+          <h2>Dock &amp; apps</h2>
+          <p>Customizable shortcuts for maps, music, phone, and settings. Full app drawer with hide-list support.</p>
+        </article>
+        <article class="card">
+          <h2>Phone screen</h2>
+          <p>Recents, searchable contacts, and dial pad. Optional permissions; data stays on your device.</p>
+        </article>
+        <article class="card">
+          <h2>Built for head units</h2>
+          <p>Large touch targets, landscape layout, and onboarding to set Karter as your default home app.</p>
+        </article>
+      </section>
+
+      <p class="note">
+        <strong>Requirements:</strong> Android 8.0 (API 26) or newer. Designed for landscape Android head units and tablets; phone portrait works but is not the primary layout.
+      </p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>
+        &copy; <span id="year"></span> Karter &middot;
+        <a href="privacy.html">Privacy policy</a>
+      </p>
+    </div>
+  </footer>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="privacy_intro">Karter runs on your device. This summary explains what the app accesses and why.</string>
+    <string name="privacy_section_location">Location</string>
+    <string name="privacy_body_location">Used for weather on the dashboard and GPS speed. Coordinates are sent only to Open-Meteo for weather forecasts. We do not operate a backend that stores your location.</string>
+    <string name="privacy_section_phone">Contacts and calls</string>
+    <string name="privacy_body_phone">Optional. The built-in Phone screen reads contacts and call history on the device when available, and can place outgoing calls through your paired phone over Bluetooth hands-free. Data stays on the device.</string>
+    <string name="privacy_section_notifications">Notification access</string>
+    <string name="privacy_body_notifications">Optional. Used only to read active media session metadata (track title, artist, album art) for the Now playing widget. No message or notification text is collected.</string>
+    <string name="privacy_section_bluetooth">Bluetooth</string>
+    <string name="privacy_body_bluetooth">Shows connected device names on the dashboard. No audio or message content is read.</string>
+    <string name="privacy_section_network">Network</string>
+    <string name="privacy_body_network">Weather requests go to api.open-meteo.com. The app may ping a small endpoint to verify internet connectivity before refreshing weather.</string>
+    <string name="privacy_section_storage">On-device storage</string>
+    <string name="privacy_body_storage">Theme, dock shortcuts, hidden apps, and setup progress are stored locally with Android DataStore. Android backup may include preferences if enabled on your device.</string>
+</resources>

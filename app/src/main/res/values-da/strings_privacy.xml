@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="privacy_intro">Karter kører på din enhed. Denne oversigt forklarer, hvad appen får adgang til, og hvorfor.</string>
+    <string name="privacy_section_location">Placering</string>
+    <string name="privacy_body_location">Bruges til vejr på dashboardet og GPS-hastighed. Koordinater sendes kun til Open-Meteo for vejrudsigter. Vi driver ikke en backend, der gemmer din placering.</string>
+    <string name="privacy_section_phone">Kontakter og opkald</string>
+    <string name="privacy_body_phone">Valgfrit. Den indbyggede telefonskærm læser kontakter og opkaldshistorik på enheden, når det er tilgængeligt, og kan foretage udgående opkald via din parrede telefon over Bluetooth håndfri. Data forbliver på enheden.</string>
+    <string name="privacy_section_notifications">Meddelelsesadgang</string>
+    <string name="privacy_body_notifications">Valgfrit. Bruges kun til at læse metadata fra aktive mediesessioner (titel, kunstner, albumcover) til widgetten Afspiller nu. Ingen besked- eller meddelelsestekst indsamles.</string>
+    <string name="privacy_section_bluetooth">Bluetooth</string>
+    <string name="privacy_body_bluetooth">Viser navne på forbundne enheder på dashboardet. Intet lyd- eller beskedindhold læses.</string>
+    <string name="privacy_section_network">Netværk</string>
+    <string name="privacy_body_network">Vejranmodninger går til api.open-meteo.com. Appen kan pinge et lille slutpunkt for at verificere internetforbindelsen, før vejret opdateres.</string>
+    <string name="privacy_section_storage">Lager på enheden</string>
+    <string name="privacy_body_storage">Tema, dock-genveje, skjulte apps og opsætningsfremskridt gemmes lokalt med Android DataStore. Android-backup kan inkludere præferencer, hvis det er aktiveret på din enhed.</string>
+</resources>

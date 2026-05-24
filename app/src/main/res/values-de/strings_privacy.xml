@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="privacy_intro">Karter läuft auf Ihrem Gerät. Diese Zusammenfassung erklärt, worauf die App zugreift und warum.</string>
+    <string name="privacy_section_location">Standort</string>
+    <string name="privacy_body_location">Für Wetter auf dem Dashboard und GPS-Geschwindigkeit. Koordinaten werden nur an Open-Meteo für Wettervorhersagen gesendet. Wir betreiben keinen Server, der Ihren Standort speichert.</string>
+    <string name="privacy_section_phone">Kontakte und Anrufe</string>
+    <string name="privacy_body_phone">Optional. Der eingebaute Telefon-Bildschirm liest Kontakte und Anrufverlauf auf dem Gerät, wenn verfügbar, und kann ausgehende Anrufe über Ihr gekoppeltes Telefon per Bluetooth-Freisprechanlage starten. Daten bleiben auf dem Gerät.</string>
+    <string name="privacy_section_notifications">Benachrichtigungszugriff</string>
+    <string name="privacy_body_notifications">Optional. Nur zum Lesen von Metadaten aktiver Medien-Sitzungen (Titel, Künstler, Cover) für das Widget Wird abgespielt. Es werden keine Nachrichten- oder Benachrichtigungstexte erfasst.</string>
+    <string name="privacy_section_bluetooth">Bluetooth</string>
+    <string name="privacy_body_bluetooth">Zeigt verbundene Gerätenamen auf dem Dashboard. Es werden keine Audio- oder Nachrichteninhalte gelesen.</string>
+    <string name="privacy_section_network">Netzwerk</string>
+    <string name="privacy_body_network">Wetteranfragen gehen an api.open-meteo.com. Die App kann einen kleinen Endpunkt anpingen, um die Internetverbindung vor dem Wetter-Update zu prüfen.</string>
+    <string name="privacy_section_storage">Speicher auf dem Gerät</string>
+    <string name="privacy_body_storage">Design, Dock-Kurzwege, ausgeblendete Apps und Einrichtungsfortschritt werden lokal mit Android DataStore gespeichert. Android-Backup kann Einstellungen einschließen, wenn auf Ihrem Gerät aktiviert.</string>
+</resources>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="privacy_intro">Karter s\'exécute sur votre appareil. Ce résumé explique ce à quoi l\'application accède et pourquoi.</string>
+    <string name="privacy_section_location">Position</string>
+    <string name="privacy_body_location">Utilisée pour la météo sur le tableau de bord et la vitesse GPS. Les coordonnées sont envoyées uniquement à Open-Meteo pour les prévisions météo. Nous n\'exploitons pas de serveur qui stocke votre position.</string>
+    <string name="privacy_section_phone">Contacts et appels</string>
+    <string name="privacy_body_phone">Facultatif. L\'écran Téléphone intégré lit les contacts et l\'historique des appels sur l\'appareil lorsqu\'ils sont disponibles, et peut passer des appels sortants via votre téléphone associé en mains libres Bluetooth. Les données restent sur l\'appareil.</string>
+    <string name="privacy_section_notifications">Accès aux notifications</string>
+    <string name="privacy_body_notifications">Facultatif. Utilisé uniquement pour lire les métadonnées des sessions média actives (titre, artiste, pochette) pour le widget En cours de lecture. Aucun texte de message ou de notification n\'est collecté.</string>
+    <string name="privacy_section_bluetooth">Bluetooth</string>
+    <string name="privacy_body_bluetooth">Affiche les noms des appareils connectés sur le tableau de bord. Aucun contenu audio ou message n\'est lu.</string>
+    <string name="privacy_section_network">Réseau</string>
+    <string name="privacy_body_network">Les requêtes météo vont vers api.open-meteo.com. L\'application peut interroger un petit point de terminaison pour vérifier la connectivité Internet avant d\'actualiser la météo.</string>
+    <string name="privacy_section_storage">Stockage sur l\'appareil</string>
+    <string name="privacy_body_storage">Thème, raccourcis du dock, applications masquées et progression de la configuration sont stockés localement avec Android DataStore. La sauvegarde Android peut inclure les préférences si elle est activée sur votre appareil.</string>
+</resources>

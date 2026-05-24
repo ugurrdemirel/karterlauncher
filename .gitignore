@@ -1,0 +1,14 @@
+*.iml
+# Opening the `app` folder in the IDE creates this by mistake; the real root is `launcher/`.
+app/.idea/
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+**/build
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.aab

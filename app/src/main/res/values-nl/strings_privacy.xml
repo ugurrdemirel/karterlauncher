@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="privacy_intro">Karter draait op uw apparaat. Deze samenvatting legt uit waartoe de app toegang heeft en waarom.</string>
+    <string name="privacy_section_location">Locatie</string>
+    <string name="privacy_body_location">Gebruikt voor weer op het dashboard en GPS-snelheid. Coördinaten worden alleen naar Open-Meteo gestuurd voor weersvoorspellingen. Wij beheren geen backend die uw locatie opslaat.</string>
+    <string name="privacy_section_phone">Contacten en oproepen</string>
+    <string name="privacy_body_phone">Optioneel. Het ingebouwde telefoonscherm leest contacten en oproepgeschiedenis op het apparaat wanneer beschikbaar, en kan uitgaande oproepen plaatsen via uw gekoppelde telefoon over Bluetooth handsfree. Gegevens blijven op het apparaat.</string>
+    <string name="privacy_section_notifications">Meldingstoegang</string>
+    <string name="privacy_body_notifications">Optioneel. Alleen gebruikt om metadata van actieve mediasessies te lezen (titel, artiest, albumhoes) voor de widget Nu aan het spelen. Er worden geen bericht- of meldingsteksten verzameld.</string>
+    <string name="privacy_section_bluetooth">Bluetooth</string>
+    <string name="privacy_body_bluetooth">Toont namen van verbonden apparaten op het dashboard. Er worden geen audio- of berichtinhoud gelezen.</string>
+    <string name="privacy_section_network">Netwerk</string>
+    <string name="privacy_body_network">Weersverzoeken gaan naar api.open-meteo.com. De app kan een klein eindpunt pingen om de internetverbinding te verifiëren voordat het weer wordt vernieuwd.</string>
+    <string name="privacy_section_storage">Opslag op apparaat</string>
+    <string name="privacy_body_storage">Thema, dock-snelkoppelingen, verborgen apps en voortgang van de setup worden lokaal opgeslagen met Android DataStore. Android-back-up kan voorkeuren bevatten als dit op uw apparaat is ingeschakeld.</string>
+</resources>

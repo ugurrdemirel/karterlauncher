@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Privacy policy for Karter Android launcher.">
+  <title>Privacy policy — Karter</title>
+  <link rel="icon" href="images/logo.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="logo" href="index.html">
+        <img class="logo-img" src="images/logo.jpg" alt="Karter Launcher" width="80" height="80">
+      </a>
+      <nav class="site-nav" aria-label="Site">
+        <a href="index.html">Home</a>
+        <a href="privacy.html" aria-current="page">Privacy</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <article class="wrap legal">
+      <h1>Privacy policy</h1>
+      <p class="updated">Last updated: May 24, 2026</p>
+
+      <p>
+        This policy describes how <strong>Karter</strong> (package name <code>com.karterlauncher</code>),
+        an Android application, handles information when you use the app.
+        Karter runs primarily on your device. We do not operate a user account system or a backend
+        that stores your personal data.
+      </p>
+
+      <h2>Summary</h2>
+      <p>
+        Karter is a home launcher for Android head units and tablets. Optional features may request
+        permissions such as location, contacts, call log, phone, notification access, and Bluetooth.
+        You can deny or revoke permissions in Android settings at any time; related features will stop
+        working or show limited UI until granted again.
+      </p>
+
+      <h2>Information the app accesses</h2>
+
+      <h3>Location</h3>
+      <p>
+        Used for weather on the dashboard and GPS-based speed. Approximate coordinates are sent only to
+        <a href="https://open-meteo.com/" rel="noopener noreferrer">Open-Meteo</a>
+        (<a href="https://api.open-meteo.com/" rel="noopener noreferrer">api.open-meteo.com</a>)
+        to retrieve weather forecasts. We do not operate a server that stores your location history.
+      </p>
+
+      <h3>Contacts and calls (optional)</h3>
+      <p>
+        If you grant permission, the built-in Phone screen reads contacts and call history on the device
+        to show recents and searchable contacts. Outgoing calls may be placed through your paired phone
+        over Bluetooth hands-free when supported. This data is processed on the device and is not uploaded
+        to us.
+      </p>
+
+      <h3>Notification access (optional)</h3>
+      <p>
+        If you enable notification listener access for Karter, the app reads metadata from active media
+        sessions only — for example track title, artist, and album art for the “Now playing” widget.
+        Karter does not collect message text, notification bodies, or unrelated notification content.
+      </p>
+
+      <h3>Bluetooth and nearby devices (optional)</h3>
+      <p>
+        Used to show names of connected Bluetooth devices on the dashboard and to support phone features
+        over hands-free when applicable. No audio streams or message content are read.
+      </p>
+
+      <h3>Network</h3>
+      <p>
+        Weather requests are sent to Open-Meteo. The app may contact a small public endpoint to verify
+        internet connectivity before refreshing weather. No personal identifier is required for that check.
+      </p>
+
+      <h3>On-device storage</h3>
+      <p>
+        Preferences such as theme, dock shortcuts, hidden apps, and setup progress are stored locally on
+        your device using Android DataStore. If you enable Android backup on your device, your device
+        backup provider may include app preferences according to your system settings; we do not control
+        that backup.
+      </p>
+
+      <h2>Data we do not collect</h2>
+      <ul>
+        <li>We do not require you to create an account.</li>
+        <li>We do not sell your personal information.</li>
+        <li>We do not use advertising SDKs in Karter for cross-app tracking based on this policy’s scope.</li>
+      </ul>
+
+      <h2>Third-party services</h2>
+      <p>
+        Open-Meteo provides weather data. Their handling of requests is governed by their own terms and
+        policies. When you open other apps from the launcher (maps, music, etc.), those apps’ policies apply.
+      </p>
+
+      <h2>Children</h2>
+      <p>
+        Karter is not directed at children under 13, and we do not knowingly collect personal information
+        from children.
+      </p>
+
+      <h2>Retention and deletion</h2>
+      <p>
+        Data stored on your device remains until you clear app data, uninstall Karter, or revoke permissions.
+        Uninstalling the app removes locally stored preferences. Weather requests to Open-Meteo are transient
+        network calls; we do not retain copies on our servers because we do not operate such servers for Karter.
+      </p>
+
+      <h2>Your choices</h2>
+      <ul>
+        <li>Grant or deny permissions in Android Settings.</li>
+        <li>Disable notification access for Karter in system settings.</li>
+        <li>Review in-app <strong>Settings → Privacy &amp; data</strong> for a summary aligned with this policy.</li>
+      </ul>
+
+      <h2>Changes</h2>
+      <p>
+        We may update this policy from time to time. The “Last updated” date at the top will change when we do.
+        Continued use of the app after changes means you accept the updated policy.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        For privacy questions about Karter, contact the developer through the
+        <a href="https://play.google.com/store/apps/details?id=com.karterlauncher">Google Play listing</a>
+        (support contact listed there), or email
+        <a href="mailto:privacy@example.com">privacy@example.com</a>
+        <!-- Replace the email above before publishing. -->
+      </p>
+
+      <p>
+        <a href="index.html">← Back to home</a>
+      </p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>
+        &copy; <span id="year"></span> Karter &middot;
+        <a href="index.html">Home</a>
+      </p>
+    </div>
+  </footer>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="privacy_intro">Karter se ejecuta en su dispositivo. Este resumen explica a qué accede la aplicación y por qué.</string>
+    <string name="privacy_section_location">Ubicación</string>
+    <string name="privacy_body_location">Se usa para el tiempo en el panel y la velocidad GPS. Las coordenadas solo se envían a Open-Meteo para previsiones meteorológicas. No operamos un servidor que almacene su ubicación.</string>
+    <string name="privacy_section_phone">Contactos y llamadas</string>
+    <string name="privacy_body_phone">Opcional. La pantalla Teléfono integrada lee contactos e historial de llamadas en el dispositivo cuando están disponibles, y puede realizar llamadas salientes a través de su teléfono emparejado en manos libres por Bluetooth. Los datos permanecen en el dispositivo.</string>
+    <string name="privacy_section_notifications">Acceso a notificaciones</string>
+    <string name="privacy_body_notifications">Opcional. Se usa solo para leer metadatos de sesiones de medios activas (título, artista, portada) para el widget Reproduciendo. No se recopila texto de mensajes ni de notificaciones.</string>
+    <string name="privacy_section_bluetooth">Bluetooth</string>
+    <string name="privacy_body_bluetooth">Muestra los nombres de dispositivos conectados en el panel. No se lee contenido de audio ni de mensajes.</string>
+    <string name="privacy_section_network">Red</string>
+    <string name="privacy_body_network">Las solicitudes de tiempo van a api.open-meteo.com. La aplicación puede consultar un pequeño punto de acceso para verificar la conectividad a Internet antes de actualizar el tiempo.</string>
+    <string name="privacy_section_storage">Almacenamiento en el dispositivo</string>
+    <string name="privacy_body_storage">Tema, accesos directos del dock, aplicaciones ocultas y progreso de la configuración se almacenan localmente con Android DataStore. La copia de seguridad de Android puede incluir preferencias si está activada en su dispositivo.</string>
+</resources>
