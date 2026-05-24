@@ -11,9 +11,8 @@ One-page landing site and privacy policy for Google Play Console and public link
 
 ## Before publishing
 
-1. Replace `privacy@example.com` in `privacy.html` with your real contact email.
-2. Confirm the Play Store link (`id=com.karterlauncher`) matches your published app.
-3. Deploy the `website/` folder to any static host (see below).
+1. Confirm the Play Store link (`id=com.karterlauncher`) matches your published app.
+2. Deploy the `website/` folder to any static host (see below).
 
 These files are **not** bundled into the Android APK unless you copy them into `app/src/main/assets/`.
 
