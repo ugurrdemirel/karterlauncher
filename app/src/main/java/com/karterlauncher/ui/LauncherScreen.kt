@@ -78,6 +78,7 @@ import com.karterlauncher.LauncherViewModel
 import com.karterlauncher.R
 import com.karterlauncher.model.DockLocation
 import com.karterlauncher.model.LaunchableApp
+import com.karterlauncher.data.PhoneHubPermissions
 import com.karterlauncher.ui.components.AppIcon
 import com.karterlauncher.ui.theme.LauncherMotion
 import com.karterlauncher.ui.theme.rememberSoftPressInteraction
@@ -165,6 +166,9 @@ fun LauncherScreen(
     val mapsDesc = remember(dockMaps) { dockContentDescription(context, dockMaps, R.string.dock_maps) }
     val musicDesc = remember(dockMusic) { dockContentDescription(context, dockMusic, R.string.dock_music) }
     val phoneDesc = remember(dockPhone) { dockContentDescription(context, dockPhone, R.string.dock_phone) }
+    val phoneAvailable = remember(dockPhone) {
+        dockPhone != null || PhoneHubPermissions.hasSystemDialer(context) || PhoneHubPermissions.hasSystemContactsApp(context)
+    }
 
     BoxWithConstraints(
         modifier = modifier
@@ -200,6 +204,7 @@ fun LauncherScreen(
                     dockMapsPackage = dockMaps,
                     dockMusicPackage = dockMusic,
                     dockPhonePackage = dockPhone,
+                    phoneAvailable = phoneAvailable,
                     mapsContentDescription = mapsDesc,
                     musicContentDescription = musicDesc,
                     phoneContentDescription = phoneDesc,
@@ -224,6 +229,7 @@ fun LauncherScreen(
                 dockMapsPackage = dockMaps,
                 dockMusicPackage = dockMusic,
                 dockPhonePackage = dockPhone,
+                phoneAvailable = phoneAvailable,
                 mapsContentDescription = mapsDesc,
                 musicContentDescription = musicDesc,
                 phoneContentDescription = phoneDesc,
@@ -370,6 +376,7 @@ private fun CompactBottomDock(
     dockMapsPackage: String?,
     dockMusicPackage: String?,
     dockPhonePackage: String?,
+    phoneAvailable: Boolean,
     mapsContentDescription: String,
     musicContentDescription: String,
     phoneContentDescription: String,
@@ -407,12 +414,14 @@ private fun CompactBottomDock(
                 contentDescription = musicContentDescription,
                 onClick = onMusic,
             )
-            DockRailSlot(
-                customPackage = dockPhonePackage,
-                defaultIcon = Icons.Filled.Call,
-                contentDescription = phoneContentDescription,
-                onClick = onPhone,
-            )
+            if (phoneAvailable) {
+                DockRailSlot(
+                    customPackage = dockPhonePackage,
+                    defaultIcon = Icons.Filled.Call,
+                    contentDescription = phoneContentDescription,
+                    onClick = onPhone,
+                )
+            }
             PinnedRailIcon(
                 icon = Icons.Filled.Settings,
                 contentDescription = stringResource(R.string.dock_settings),
@@ -447,6 +456,7 @@ private data class DockRailProps(
     val dockMapsPackage: String?,
     val dockMusicPackage: String?,
     val dockPhonePackage: String?,
+    val phoneAvailable: Boolean,
     val mapsContentDescription: String,
     val musicContentDescription: String,
     val phoneContentDescription: String,
@@ -499,12 +509,14 @@ private fun PinnedAppRail(
                     contentDescription = props.musicContentDescription,
                     onClick = props.onMusic,
                 )
-                DockRailSlot(
-                    customPackage = props.dockPhonePackage,
-                    defaultIcon = Icons.Filled.Call,
-                    contentDescription = props.phoneContentDescription,
-                    onClick = props.onPhone,
-                )
+                if (props.phoneAvailable) {
+                    DockRailSlot(
+                        customPackage = props.dockPhonePackage,
+                        defaultIcon = Icons.Filled.Call,
+                        contentDescription = props.phoneContentDescription,
+                        onClick = props.onPhone,
+                    )
+                }
                 PinnedRailIcon(
                     icon = Icons.Filled.Settings,
                     contentDescription = stringResource(R.string.dock_settings),

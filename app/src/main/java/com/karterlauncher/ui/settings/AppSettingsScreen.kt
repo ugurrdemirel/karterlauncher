@@ -726,8 +726,9 @@ fun AppSettingsScreen(
     }
 
     if (pickingSlot != null) {
+        val allApps = remember(pickingSlot) { viewModel.getAllLaunchableApps() }
         AppPickerDialog(
-            apps = apps,
+            apps = allApps,
             onDismiss = { pickingSlot = null },
             onPick = { app ->
                 scope.launch {

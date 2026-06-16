@@ -3,8 +3,8 @@
     <string name="privacy_intro">Karter runs on your device. This summary explains what the app accesses and why.</string>
     <string name="privacy_section_location">Location</string>
     <string name="privacy_body_location">Used for weather on the dashboard and GPS speed. Coordinates are sent only to Open-Meteo for weather forecasts. We do not operate a backend that stores your location.</string>
-    <string name="privacy_section_phone">Contacts and calls</string>
-    <string name="privacy_body_phone">Optional. The built-in Phone screen reads contacts and call history on the device when available, and can place outgoing calls through your paired phone over Bluetooth hands-free. Data stays on the device.</string>
+    <string name="privacy_section_phone">Phone</string>
+    <string name="privacy_body_phone">The built-in phone hub can open your device\'s default phone and contacts apps, and place outgoing calls through a paired phone over Bluetooth hands-free. No contacts or call history is read directly by Karter.</string>
     <string name="privacy_section_notifications">Notification access</string>
     <string name="privacy_body_notifications">Optional. Used only to read active media session metadata (track title, artist, album art) for the Now playing widget. No message or notification text is collected.</string>
     <string name="privacy_section_bluetooth">Bluetooth</string>

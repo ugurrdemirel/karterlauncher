@@ -3,6 +3,8 @@ package com.karterlauncher
 import android.app.Application
 import android.content.Intent
 import android.media.AudioManager
+import android.provider.CallLog
+import android.provider.ContactsContract
 import android.os.SystemClock
 import android.view.KeyEvent
 import androidx.lifecycle.AndroidViewModel
@@ -19,6 +21,7 @@ import com.karterlauncher.data.SpeedometerRepository
 import com.karterlauncher.data.StartupSnapshot
 import com.karterlauncher.data.UserPreferencesRepository
 import com.karterlauncher.data.InternetConnectedTtsAnnouncer
+import com.karterlauncher.data.PhoneHubPermissions
 import com.karterlauncher.data.ValidatedInternetMonitor
 import com.karterlauncher.data.WeatherRepository
 import com.karterlauncher.model.LaunchRequest
@@ -174,6 +177,8 @@ class LauncherViewModel(
         }
     }
 
+    fun getAllLaunchableApps(): List<LaunchableApp> = repository.getLaunchableApps()
+
     fun setAppHidden(packageName: String, hidden: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setAppHidden(packageName, hidden)
@@ -313,11 +318,35 @@ class LauncherViewModel(
         viewModelScope.launch {
             val custom = userPreferencesRepository.dockPhonePackageFlow.first()
             if (custom.isNullOrBlank()) {
-                openBuiltinPhoneHub()
+                openSystemPhoneOrContacts()
             } else {
-                launchPackageOrFallback(custom) { openDialerDefault() }
+                launchPackageOrFallback(custom) { openSystemPhoneOrContacts() }
             }
         }
+    }
+
+    private suspend fun openSystemPhoneOrContacts() {
+        val context = getApplication<Application>()
+        if (PhoneHubPermissions.hasSystemDialer(context)) {
+            openCallHistoryDefault()
+        } else if (PhoneHubPermissions.hasSystemContactsApp(context)) {
+            openContactsDefault()
+        } else {
+            _snackbarMessages.send(
+                context.getString(R.string.phone_hub_no_apps),
+            )
+        }
+    }
+
+    private suspend fun openContactsDefault() {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            data = ContactsContract.Contacts.CONTENT_URI
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        launchIntent(
+            intent,
+            failureLabel = getApplication<Application>().getString(R.string.dock_phone),
+        )
     }
 
     private suspend fun launchPackageOrFallback(
@@ -364,24 +393,26 @@ class LauncherViewModel(
         )
     }
 
-    private suspend fun openBuiltinPhoneHub() {
-        val intent = Intent(getApplication(), PhoneHubActivity::class.java).apply {
+    private suspend fun openCallHistoryDefault() {
+        val context = getApplication<Application>()
+        val callLogIntent = Intent(Intent.ACTION_VIEW).apply {
+            data = CallLog.Calls.CONTENT_URI
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
-        launchIntent(
-            intent,
-            failureLabel = getApplication<Application>().getString(R.string.dock_phone),
-        )
-    }
-
-    private suspend fun openDialerDefault() {
-        val intent = Intent(Intent.ACTION_DIAL).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        if (callLogIntent.resolveActivity(context.packageManager) != null) {
+            launchIntent(
+                callLogIntent,
+                failureLabel = context.getString(R.string.dock_phone),
+            )
+        } else {
+            val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            launchIntent(
+                dialIntent,
+                failureLabel = context.getString(R.string.dock_phone),
+            )
         }
-        launchIntent(
-            intent,
-            failureLabel = getApplication<Application>().getString(R.string.dock_phone),
-        )
     }
 
     private suspend fun launchIntent(intent: Intent, failureLabel: String? = null) {

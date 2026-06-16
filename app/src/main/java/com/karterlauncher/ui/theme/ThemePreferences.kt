@@ -4,6 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
+import android.view.View
+import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
@@ -34,6 +37,32 @@ fun Activity.applyLauncherWindowTheme(themeMode: ThemeMode) {
     val dark = themeMode.prefersDarkTheme(isSystemInDarkTheme())
     @Suppress("DEPRECATION")
     window.setBackgroundDrawable(ColorDrawable(launcherBackgroundColor(dark)))
+    updateSystemBarAppearance(dark)
+}
+
+private fun Activity.updateSystemBarAppearance(dark: Boolean) {
+    val decorView = window.peekDecorView() ?: return
+    if (Build.VERSION.SDK_INT >= 30) {
+        decorView.windowInsetsController?.setSystemBarsAppearance(
+            if (dark) 0 else (
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
+                    WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+                ),
+            WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
+        )
+    } else {
+        @Suppress("DEPRECATION")
+        decorView.systemUiVisibility = if (dark) {
+            decorView.systemUiVisibility and
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv() and
+                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+        } else {
+            decorView.systemUiVisibility or
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
+                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        }
+    }
 }
 
 /** Reads persisted theme before the first frame and applies the matching window background. */

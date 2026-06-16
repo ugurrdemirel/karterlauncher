@@ -8,10 +8,6 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.READ_CALL_LOG" />
-    <uses-permission android:name="android.permission.CALL_PHONE" />
-
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />
@@ -19,10 +15,6 @@
         </intent>
         <intent>
             <action android:name="android.intent.action.DIAL" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.CALL" />
-            <data android:scheme="tel" />
         </intent>
         <intent>
             <action android:name="android.intent.action.VIEW" />
@@ -34,6 +26,10 @@
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.APP_MUSIC" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="content" />
         </intent>
     </queries>
 
@@ -81,14 +77,6 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".PrivacyActivity"
-            android:exported="false"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
-            android:resizeableActivity="true"
-            android:screenOrientation="sensorLandscape"
-            android:theme="@style/Theme.Launcher"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".PhoneHubActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:resizeableActivity="true"

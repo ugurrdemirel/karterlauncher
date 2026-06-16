@@ -34,7 +34,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Bluetooth
@@ -68,7 +67,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.karterlauncher.R
 import com.karterlauncher.data.LocationRepository
-import com.karterlauncher.data.PhoneHubPermissions
 import com.karterlauncher.data.UserPreferencesRepository
 import com.karterlauncher.util.isNotificationListenerEnabled
 import com.karterlauncher.model.ThemeMode
@@ -83,7 +81,7 @@ fun OnboardingScreen(
     val activity = context as Activity
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
-    val pagerState = rememberPagerState(pageCount = { 6 })
+    val pagerState = rememberPagerState(pageCount = { 5 })
     val configuration = LocalConfiguration.current
     val narrowControls = configuration.screenWidthDp < 360
 
@@ -104,7 +102,6 @@ fun OnboardingScreen(
     var notificationListenerEnabled by remember {
         mutableStateOf(isNotificationListenerEnabled(context))
     }
-    var phonePermTick by remember { mutableIntStateOf(0) }
     var bluetoothPermTick by remember { mutableIntStateOf(0) }
 
     DisposableEffect(lifecycleOwner) {
@@ -112,7 +109,6 @@ fun OnboardingScreen(
             if (event == Lifecycle.Event.ON_RESUME) {
                 isDefaultHome = context.isOurAppDefaultHome()
                 locationTick++
-                phonePermTick++
                 bluetoothPermTick++
                 notificationListenerEnabled = isNotificationListenerEnabled(context)
             }
@@ -120,10 +116,6 @@ fun OnboardingScreen(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
-
-    val phoneLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions(),
-    ) { phonePermTick++ }
 
     val locationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
@@ -156,7 +148,7 @@ fun OnboardingScreen(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                repeat(6) { index ->
+                repeat(5) { index ->
                     Box(
                         modifier = Modifier
                             .size(if (pagerState.currentPage == index) 10.dp else 8.dp)
@@ -215,18 +207,7 @@ fun OnboardingScreen(
                             )
                         },
                     )
-                    2 -> {
-                        val phoneGranted = remember(phonePermTick) {
-                            PhoneHubPermissions.allGranted(context)
-                        }
-                        OnboardingPhoneStep(
-                            phoneGranted = phoneGranted,
-                            onRequestPhonePermissions = {
-                                phoneLauncher.launch(PhoneHubPermissions.REQUIRED)
-                            },
-                        )
-                    }
-                    3 -> OnboardingNotificationStep(
+                    2 -> OnboardingNotificationStep(
                         listenerEnabled = notificationListenerEnabled,
                         onOpenNotificationSettings = {
                             context.startActivity(
@@ -234,7 +215,7 @@ fun OnboardingScreen(
                             )
                         },
                     )
-                    4 -> {
+                    3 -> {
                         val bluetoothGranted = remember(bluetoothPermTick) {
                             onboardingBluetoothGranted(context)
                         }
@@ -248,7 +229,7 @@ fun OnboardingScreen(
                             },
                         )
                     }
-                    5 -> OnboardingThemeStep(
+                    4 -> OnboardingThemeStep(
                         selected = selectedTheme,
                         onSelected = { selectedTheme = it },
                     )
@@ -289,7 +270,7 @@ fun OnboardingScreen(
                         } else {
                             Spacer(Modifier.weight(1f))
                         }
-                        if (pagerState.currentPage < 5) {
+                        if (pagerState.currentPage < 4) {
                             Button(
                                 onClick = {
                                     scope.launch {
@@ -338,7 +319,7 @@ fun OnboardingScreen(
                             Spacer(Modifier.size(1.dp))
                         }
 
-                        if (pagerState.currentPage < 5) {
+                        if (pagerState.currentPage < 4) {
                             Button(
                                 onClick = {
                                     scope.launch {
@@ -478,52 +459,6 @@ private fun OnboardingLocationStep(
             },
             style = MaterialTheme.typography.labelLarge,
             color = if (locationGranted) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            },
-        )
-    }
-}
-
-@Composable
-private fun OnboardingPhoneStep(
-    phoneGranted: Boolean,
-    onRequestPhonePermissions: () -> Unit,
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Icon(
-            imageVector = Icons.Filled.Call,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(48.dp),
-        )
-        Text(
-            text = stringResource(R.string.onboarding_step_phone_title),
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Text(
-            text = stringResource(R.string.onboarding_step_phone_body),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        OutlinedButton(
-            onClick = onRequestPhonePermissions,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(stringResource(R.string.onboarding_step_phone_cta))
-        }
-        Text(
-            text = if (phoneGranted) {
-                stringResource(R.string.onboarding_step_phone_granted)
-            } else {
-                stringResource(R.string.onboarding_step_phone_denied)
-            },
-            style = MaterialTheme.typography.labelLarge,
-            color = if (phoneGranted) {
                 MaterialTheme.colorScheme.primary
             } else {
                 MaterialTheme.colorScheme.onSurfaceVariant
