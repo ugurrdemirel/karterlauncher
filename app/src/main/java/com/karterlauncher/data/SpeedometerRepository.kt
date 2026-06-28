@@ -23,8 +23,14 @@ class SpeedometerRepository(
     private val _state = MutableStateFlow<SpeedGaugeState>(SpeedGaugeState.NoPermission)
     val state: StateFlow<SpeedGaugeState> = _state.asStateFlow()
 
+    private val _lastLocation = MutableStateFlow<Location?>(null)
+    /**
+     * Hız göstergesi için fused location update'leri geldikçe güncellenir.
+     * Hız sınırı servisi ve diğer konum tabanlı özellikler bu akışı tüketir.
+     */
+    val lastLocation: StateFlow<Location?> = _lastLocation.asStateFlow()
+
     private var callback: LocationCallback? = null
-    private var lastLocation: Location? = null
 
     private fun hasLocationPermission(): Boolean {
         val fine = ContextCompat.checkSelfPermission(
@@ -43,10 +49,11 @@ class SpeedometerRepository(
         if (callback != null) return
         if (!hasLocationPermission()) {
             _state.value = SpeedGaugeState.NoPermission
+            _lastLocation.value = null
             return
         }
         _state.value = SpeedGaugeState.WaitingForFix
-        lastLocation = null
+        _lastLocation.value = null
 
         val request = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
@@ -82,12 +89,13 @@ class SpeedometerRepository(
             client.removeLocationUpdates(it)
             callback = null
         }
-        lastLocation = null
+        _lastLocation.value = null
     }
 
     private fun handleLocation(location: Location) {
-        val speedMps = resolveSpeedMps(location, lastLocation)
-        lastLocation = location
+        val previous = _lastLocation.value
+        val speedMps = resolveSpeedMps(location, previous)
+        _lastLocation.value = location
 
         val rawKmh = (speedMps * 3.6f).coerceAtLeast(0f)
         _state.value = SpeedGaugeState.Speed(rawKmh)

@@ -59,6 +59,14 @@
     <string name="speed_unit_kmh">km/sa</string>
     <string name="speed_no_permission_hint">Konuma izin vermek için dokunun</string>
     <string name="speed_waiting_fix">GPS aranıyor…</string>
+    <string name="speed_limit_widget_title">Hız sınırı</string>
+    <string name="speed_limit_tts_warning">Hız sınırı %1$d. Lütfen yavaşlayın.</string>
+    <string name="app_settings_speed_limit_title">Hız sınırını göster</string>
+    <string name="app_settings_speed_limit_summary">OpenStreetMap (Overpass) üzerinden yolun hız sınırını çeker. Yalnızca mevcut GPS koordinatları gönderilir.</string>
+    <string name="app_settings_speed_limit_warning_title">Hız sınırı sesli uyarısı</string>
+    <string name="app_settings_speed_limit_warning_summary">Hız sınırının biraz üzerinde birkaç saniye kalındığında sesli uyarı verir.</string>
+    <string name="app_settings_speed_limit_chime_title">Uyarıdan önce zil</string>
+    <string name="app_settings_speed_limit_chime_summary">Konuşmadan hemen önce kısa bir iki-tonlu zil (ding-dong) çalarak uyarıyı daha fark edilir kılar.</string>
     <string name="seatbelt_tts_reminder">Arabada olan herkes lütfen emniyet kemerini taksın.</string>
     <string name="onboarding_title">Hoş geldiniz</string>
     <string name="onboarding_step_home_title">Ana ekran uygulaması yapın</string>

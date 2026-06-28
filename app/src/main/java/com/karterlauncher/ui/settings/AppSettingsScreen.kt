@@ -117,6 +117,15 @@ fun AppSettingsScreen(
     val seatbeltReminderEnabled by prefs.seatbeltReminderEnabledFlow.collectAsStateWithLifecycle(
         initialValue = false,
     )
+    val speedLimitEnabled by prefs.speedLimitEnabledFlow.collectAsStateWithLifecycle(
+        initialValue = true,
+    )
+    val speedLimitWarningEnabled by prefs.speedLimitWarningEnabledFlow.collectAsStateWithLifecycle(
+        initialValue = false,
+    )
+    val speedLimitChimeEnabled by prefs.speedLimitChimeEnabledFlow.collectAsStateWithLifecycle(
+        initialValue = true,
+    )
     val internetTtsEnabled by prefs.internetTtsEnabledFlow.collectAsStateWithLifecycle(
         initialValue = false,
     )
@@ -327,34 +336,102 @@ fun AppSettingsScreen(
                     ListItem(
                         headlineContent = {
                             Text(
-                                stringResource(R.string.app_settings_internet_tts_title),
+                                stringResource(R.string.app_settings_speed_limit_title),
                                 style = MaterialTheme.typography.titleMedium,
                             )
                         },
                         supportingContent = {
                             Text(
-                                stringResource(R.string.app_settings_internet_tts_summary),
+                                stringResource(R.string.app_settings_speed_limit_summary),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         },
                         leadingContent = {
                             Icon(
-                                Icons.Outlined.Campaign,
+                                Icons.Filled.Speed,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         },
                         trailingContent = {
                             Switch(
-                                checked = internetTtsEnabled,
+                                checked = speedLimitEnabled,
                                 onCheckedChange = { on ->
-                                    scope.launch { prefs.setInternetTtsEnabled(on) }
+                                    viewModel.onSpeedLimitEnabledChanged(on)
                                 },
                             )
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     )
+                    if (speedLimitEnabled) {
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                        ListItem(
+                            headlineContent = {
+                                Text(
+                                    stringResource(R.string.app_settings_speed_limit_warning_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
+                            },
+                            supportingContent = {
+                                Text(
+                                    stringResource(R.string.app_settings_speed_limit_warning_summary),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            },
+                            leadingContent = {
+                                Icon(
+                                    Icons.Outlined.Campaign,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            },
+                            trailingContent = {
+                                Switch(
+                                    checked = speedLimitWarningEnabled,
+                                    onCheckedChange = { on ->
+                                        scope.launch { prefs.setSpeedLimitWarningEnabled(on) }
+                                    },
+                                )
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        )
+                        if (speedLimitWarningEnabled) {
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                            ListItem(
+                                headlineContent = {
+                                    Text(
+                                        stringResource(R.string.app_settings_speed_limit_chime_title),
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                },
+                                supportingContent = {
+                                    Text(
+                                        stringResource(R.string.app_settings_speed_limit_chime_summary),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                },
+                                leadingContent = {
+                                    Icon(
+                                        Icons.Outlined.Notifications,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                },
+                                trailingContent = {
+                                    Switch(
+                                        checked = speedLimitChimeEnabled,
+                                        onCheckedChange = { on ->
+                                            scope.launch { prefs.setSpeedLimitChimeEnabled(on) }
+                                        },
+                                    )
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            )
+                        }
+                    }
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     ListItem(
                         headlineContent = {

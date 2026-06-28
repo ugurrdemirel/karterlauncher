@@ -59,6 +59,14 @@
     <string name="speed_unit_kmh">km/h</string>
     <string name="speed_no_permission_hint">Tap to allow location</string>
     <string name="speed_waiting_fix">Searching for GPS…</string>
+    <string name="speed_limit_widget_title">Speed limit</string>
+    <string name="speed_limit_tts_warning">Speed limit is %1$d. Please slow down.</string>
+    <string name="app_settings_speed_limit_title">Show speed limit on dashboard</string>
+    <string name="app_settings_speed_limit_summary">Looks up the road\'s speed limit from OpenStreetMap (Overpass). Sends only the current GPS coordinates.</string>
+    <string name="app_settings_speed_limit_warning_title">Speed limit voice warning</string>
+    <string name="app_settings_speed_limit_warning_summary">Speaks a warning when your speed stays above the limit for a few seconds.</string>
+    <string name="app_settings_speed_limit_chime_title">Chime before warning</string>
+    <string name="app_settings_speed_limit_chime_summary">Plays a short two-tone chime (ding-dong) just before the spoken warning, so the alert is easier to notice.</string>
     <string name="seatbelt_tts_reminder">Everyone in the vehicle, please fasten your seat belts.</string>
     <string name="onboarding_title">Welcome</string>
     <string name="onboarding_step_home_title">Set as home app</string>

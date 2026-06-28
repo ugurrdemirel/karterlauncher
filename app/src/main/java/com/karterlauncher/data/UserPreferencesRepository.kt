@@ -84,6 +84,21 @@ class UserPreferencesRepository(
         prefs[KEY_SEATBELT_REMINDER_ENABLED] ?: false
     }
 
+    /** Varsayılan: açık (true). Konum + internet izni varsa Overpass'ten hız sınırı çekilir. */
+    val speedLimitEnabledFlow: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[KEY_SPEED_LIMIT_ENABLED] ?: true
+    }
+
+    /** Varsayılan: kapalı (false). Hız sınırı +10 km/h üzerinde TTS uyarısı. */
+    val speedLimitWarningEnabledFlow: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[KEY_SPEED_LIMIT_WARNING_ENABLED] ?: false
+    }
+
+    /** Varsayılan: açık (true). TTS'ten önce iki tonlu "ding-dong" çalar. */
+    val speedLimitChimeEnabledFlow: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[KEY_SPEED_LIMIT_CHIME_ENABLED] ?: true
+    }
+
     /** Varsayılan: kapalı (false). */
     val internetTtsEnabledFlow: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[KEY_INTERNET_TTS_ENABLED] ?: false
@@ -100,6 +115,18 @@ class UserPreferencesRepository(
 
     suspend fun setSeatbeltReminderEnabled(enabled: Boolean) {
         dataStore.edit { it[KEY_SEATBELT_REMINDER_ENABLED] = enabled }
+    }
+
+    suspend fun setSpeedLimitEnabled(enabled: Boolean) {
+        dataStore.edit { it[KEY_SPEED_LIMIT_ENABLED] = enabled }
+    }
+
+    suspend fun setSpeedLimitWarningEnabled(enabled: Boolean) {
+        dataStore.edit { it[KEY_SPEED_LIMIT_WARNING_ENABLED] = enabled }
+    }
+
+    suspend fun setSpeedLimitChimeEnabled(enabled: Boolean) {
+        dataStore.edit { it[KEY_SPEED_LIMIT_CHIME_ENABLED] = enabled }
     }
 
     suspend fun setInternetTtsEnabled(enabled: Boolean) {
@@ -170,5 +197,8 @@ class UserPreferencesRepository(
         private val KEY_SPEED_HEAT_COLORS_ENABLED = booleanPreferencesKey("speed_heat_colors_enabled")
         private val KEY_INTERNET_TTS_ENABLED = booleanPreferencesKey("internet_tts_enabled")
         private val KEY_HIDDEN_APPS = stringSetPreferencesKey("hidden_app_packages")
+        private val KEY_SPEED_LIMIT_ENABLED = booleanPreferencesKey("speed_limit_enabled")
+        private val KEY_SPEED_LIMIT_WARNING_ENABLED = booleanPreferencesKey("speed_limit_warning_enabled")
+        private val KEY_SPEED_LIMIT_CHIME_ENABLED = booleanPreferencesKey("speed_limit_chime_enabled")
     }
 }

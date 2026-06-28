@@ -18,6 +18,8 @@ import com.karterlauncher.data.NowPlayingUi
 import com.karterlauncher.data.ScreenInteractiveMonitor
 import com.karterlauncher.data.SeatbeltReminderController
 import com.karterlauncher.data.SpeedometerRepository
+import com.karterlauncher.data.SpeedLimitService
+import com.karterlauncher.data.SpeedLimitWarningController
 import com.karterlauncher.data.StartupSnapshot
 import com.karterlauncher.data.UserPreferencesRepository
 import com.karterlauncher.data.InternetConnectedTtsAnnouncer
@@ -27,6 +29,7 @@ import com.karterlauncher.data.WeatherRepository
 import com.karterlauncher.model.LaunchRequest
 import com.karterlauncher.model.LaunchableApp
 import com.karterlauncher.model.SpeedGaugeState
+import com.karterlauncher.model.SpeedLimitState
 import com.karterlauncher.model.WeatherUiState
 import com.karterlauncher.R
 import kotlinx.coroutines.channels.Channel
@@ -54,6 +57,10 @@ class LauncherViewModel(
     private val activeMediaRepository = ActiveMediaRepository.getInstance(application)
     private val bluetoothTracker = BluetoothConnectionTracker(application)
     private val speedometerRepository = SpeedometerRepository(application)
+    private val speedLimitService = SpeedLimitService(
+        isOnline = { internetMonitor.connected.value },
+    )
+    private val speedLimitWarningController = SpeedLimitWarningController(application)
     private val seatbeltReminderController = SeatbeltReminderController(application)
     private val internetMonitor = ValidatedInternetMonitor(application)
     private val internetConnectedTtsAnnouncer = InternetConnectedTtsAnnouncer(application)
@@ -77,6 +84,8 @@ class LauncherViewModel(
     val bluetoothState: StateFlow<BluetoothDashboardState> = bluetoothTracker.state
 
     val speedState: StateFlow<SpeedGaugeState> = speedometerRepository.state
+
+    val speedLimitState: StateFlow<SpeedLimitState> = speedLimitService.state
 
     val userPreferences: UserPreferencesRepository get() = userPreferencesRepository
 
@@ -128,6 +137,8 @@ class LauncherViewModel(
     override fun onCleared() {
         bluetoothTracker.stop()
         speedometerRepository.stop()
+        speedLimitService.destroy()
+        speedLimitWarningController.destroy()
         seatbeltReminderController.destroy()
         internetMonitor.stop()
         internetConnectedTtsAnnouncer.shutdown()
@@ -142,12 +153,48 @@ class LauncherViewModel(
             speedometerRepository.state,
             userPreferencesRepository.seatbeltReminderEnabledFlow,
         )
+        viewModelScope.launch {
+            val enabled = userPreferencesRepository.speedLimitEnabledFlow.first()
+            if (enabled) {
+                speedLimitService.start(speedometerRepository.lastLocation)
+                speedLimitWarningController.startObserving(
+                    speedometerRepository.state,
+                    speedLimitService.state,
+                    userPreferencesRepository.speedLimitWarningEnabledFlow,
+                    userPreferencesRepository.speedLimitChimeEnabledFlow,
+                )
+            } else {
+                speedLimitService.stop()
+                speedLimitWarningController.stopObserving()
+            }
+        }
     }
 
     /** [Lifecycle.Event.ON_PAUSE] veya gerektiğinde pili korumak için. */
     fun stopSpeedometer() {
         seatbeltReminderController.stopObserving()
+        speedLimitWarningController.stopObserving()
+        speedLimitService.stop()
         speedometerRepository.stop()
+    }
+
+    /** Ayarlardan "Speed limit" kapatıldığında çağrılır. */
+    fun onSpeedLimitEnabledChanged(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setSpeedLimitEnabled(enabled)
+            if (enabled) {
+                speedLimitService.start(speedometerRepository.lastLocation)
+                speedLimitWarningController.startObserving(
+                    speedometerRepository.state,
+                    speedLimitService.state,
+                    userPreferencesRepository.speedLimitWarningEnabledFlow,
+                    userPreferencesRepository.speedLimitChimeEnabledFlow,
+                )
+            } else {
+                speedLimitWarningController.stopObserving()
+                speedLimitService.stop()
+            }
+        }
     }
 
     fun refreshNowPlaying() {

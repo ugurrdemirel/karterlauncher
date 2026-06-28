@@ -51,6 +51,8 @@ import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.Thunderstorm
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -60,6 +62,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -99,6 +102,7 @@ import com.karterlauncher.R
 import com.karterlauncher.data.BluetoothDashboardState
 import com.karterlauncher.data.NowPlayingUi
 import com.karterlauncher.model.SpeedGaugeState
+import com.karterlauncher.model.SpeedLimitState
 import com.karterlauncher.model.WeatherSummary
 import com.karterlauncher.model.WeatherUiState
 import com.karterlauncher.ui.theme.LauncherMotion
@@ -257,6 +261,7 @@ fun HomeDashboard(
     val nowPlaying by viewModel.nowPlaying.collectAsStateWithLifecycle()
     val bluetoothState by viewModel.bluetoothState.collectAsStateWithLifecycle()
     val speedState by viewModel.speedState.collectAsStateWithLifecycle()
+    val speedLimitState by viewModel.speedLimitState.collectAsStateWithLifecycle()
     val prefsVm = viewModel.userPreferences
     val speedHeatColorsEnabled by prefsVm.speedHeatColorsEnabledFlow.collectAsStateWithLifecycle(
         initialValue = true,
@@ -326,6 +331,7 @@ fun HomeDashboard(
             )
             SpeedGaugeCard(
                 state = speedState,
+                speedLimitState = speedLimitState,
                 onRequestPermission = {
                     permissionLauncher.launch(
                         arrayOf(
@@ -396,6 +402,7 @@ fun HomeDashboard(
 @Composable
 private fun SpeedGaugeCard(
     state: SpeedGaugeState,
+    speedLimitState: SpeedLimitState,
     onRequestPermission: () -> Unit,
     heatColorsEnabled: Boolean,
     modifier: Modifier = Modifier,
@@ -760,7 +767,110 @@ private fun SpeedGaugeCard(
                             }
                         }
                     }
+
+                    SpeedLimitChip(
+                        limitState = speedLimitState,
+                        currentSpeedKmh = (state as? SpeedGaugeState.Speed)?.kmh,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 12.dp, bottom = 4.dp),
+                    )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SpeedLimitChip(
+    limitState: SpeedLimitState,
+    currentSpeedKmh: Float?,
+    modifier: Modifier = Modifier,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val exceeded: Boolean = limitState is SpeedLimitState.Known &&
+        currentSpeedKmh != null &&
+        currentSpeedKmh >= limitState.kmh
+
+    val containerColor: Color
+    val contentColor: Color
+    val valueText: String
+    val trailing: @Composable (() -> Unit)?
+
+    when (limitState) {
+        SpeedLimitState.Idle, SpeedLimitState.Loading -> {
+            containerColor = scheme.surfaceContainerHigh.copy(alpha = 0.78f)
+            contentColor = scheme.onSurfaceVariant
+            valueText = "—"
+            trailing = {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(14.dp),
+                    strokeWidth = 2.dp,
+                    color = contentColor.copy(alpha = 0.8f),
+                )
+            }
+        }
+        is SpeedLimitState.Known -> {
+            containerColor = if (exceeded) scheme.errorContainer else scheme.primaryContainer
+            contentColor = if (exceeded) scheme.onErrorContainer else scheme.onPrimaryContainer
+            valueText = limitState.kmh.toString()
+            trailing = null
+        }
+        is SpeedLimitState.Unknown -> {
+            containerColor = scheme.surfaceContainerHigh.copy(alpha = 0.78f)
+            contentColor = scheme.onSurfaceVariant
+            valueText = "—"
+            trailing = null
+        }
+        is SpeedLimitState.Error -> {
+            containerColor = scheme.errorContainer.copy(alpha = 0.7f)
+            contentColor = scheme.onErrorContainer
+            valueText = "—"
+            trailing = {
+                Icon(
+                    imageVector = Icons.Outlined.WarningAmber,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = contentColor,
+                )
+            }
+        }
+    }
+
+    val limitTitle = stringResource(R.string.speed_limit_widget_title)
+    val kmhUnit = stringResource(R.string.speed_unit_kmh)
+    val a11y = when (limitState) {
+        is SpeedLimitState.Known -> "$limitTitle: ${limitState.kmh} $kmhUnit"
+        else -> limitTitle
+    }
+
+    Surface(
+        modifier = modifier.semantics { contentDescription = a11y },
+        shape = RoundedCornerShape(14.dp),
+        color = containerColor,
+        contentColor = contentColor,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Speed,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = contentColor,
+            )
+            Text(
+                text = valueText,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                ),
+                color = contentColor,
+                maxLines = 1,
+            )
+            if (trailing != null) {
+                trailing()
             }
         }
     }
