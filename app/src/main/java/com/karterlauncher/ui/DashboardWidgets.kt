@@ -10,15 +10,12 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
 import android.content.pm.PackageManager
-import android.media.session.MediaSession.QueueItem
 import android.provider.Settings
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +28,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -57,6 +55,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -81,6 +80,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -106,6 +106,9 @@ import com.karterlauncher.model.SpeedLimitState
 import com.karterlauncher.model.WeatherSummary
 import com.karterlauncher.model.WeatherUiState
 import com.karterlauncher.ui.theme.LauncherMotion
+import com.karterlauncher.ui.theme.rememberSoftPressInteraction
+import com.karterlauncher.ui.theme.softPressScale
+import com.karterlauncher.util.formatTrackDuration
 import kotlin.math.round
 
 /** Düşük hızda 0, [SPEED_HEAT_END_KMH] civarında 1 — renk kırmızıya kayar. */
@@ -254,11 +257,13 @@ private fun MediaVolumeSliderRow(modifier: Modifier = Modifier) {
 @Composable
 fun HomeDashboard(
     viewModel: LauncherViewModel,
+    onOpenMusicPlayer: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val weatherState by viewModel.weatherState.collectAsStateWithLifecycle()
     val nowPlaying by viewModel.nowPlaying.collectAsStateWithLifecycle()
+    val positionMs by viewModel.positionMs.collectAsStateWithLifecycle()
     val bluetoothState by viewModel.bluetoothState.collectAsStateWithLifecycle()
     val speedState by viewModel.speedState.collectAsStateWithLifecycle()
     val speedLimitState by viewModel.speedLimitState.collectAsStateWithLifecycle()
@@ -320,11 +325,11 @@ fun HomeDashboard(
         ) {
             MusicNowPlayingCard(
                 nowPlaying = nowPlaying,
+                positionMs = positionMs,
                 onPrevious = { viewModel.mediaPrevious() },
                 onPlayPause = { viewModel.mediaPlayPause() },
                 onNext = { viewModel.mediaNext() },
-                onOpenMusicApp = { viewModel.openMusicApp() },
-                onSkipToQueueItem = { viewModel.skipToQueueItem(it) },
+                onOpenMusicPlayer = onOpenMusicPlayer,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),
@@ -1210,16 +1215,17 @@ private fun wmoIcon(code: Int): ImageVector = when (code) {
 @Composable
 private fun MusicNowPlayingCard(
     nowPlaying: NowPlayingUi,
+    positionMs: Long,
     onPrevious: () -> Unit,
     onPlayPause: () -> Unit,
     onNext: () -> Unit,
-    onOpenMusicApp: () -> Unit,
-    onSkipToQueueItem: (Long) -> Unit,
+    onOpenMusicPlayer: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
     val placeholderPainter = remember(surfaceVariant) { ColorPainter(surfaceVariant) }
+    val scheme = MaterialTheme.colorScheme
 
     val titleText = when {
         nowPlaying.hasActiveSession && !nowPlaying.title.isNullOrBlank() -> nowPlaying.title
@@ -1237,29 +1243,36 @@ private fun MusicNowPlayingCard(
         else -> stringResource(R.string.music_widget_nothing_playing)
     }
 
+    val upNextTrack = nowPlaying.upNext.firstOrNull()
+    val hasUpNext = upNextTrack != null &&
+        nowPlaying.hasActiveSession &&
+        nowPlaying.notificationAccessEnabled
+
     Card(
+        onClick = onOpenMusicPlayer,
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = scheme.surface,
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 Box(
                     modifier = Modifier
-                        .size(72.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                        .size(108.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(surfaceVariant),
                     contentAlignment = Alignment.Center,
                 ) {
                     if (nowPlaying.artworkModel != null) {
@@ -1267,7 +1280,7 @@ private fun MusicNowPlayingCard(
                             model = ImageRequest.Builder(context)
                                 .data(nowPlaying.artworkModel)
                                 .crossfade(true)
-                                .size(Size(256, 256))
+                                .size(Size(384, 384))
                                 .build(),
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
@@ -1279,8 +1292,8 @@ private fun MusicNowPlayingCard(
                         Icon(
                             imageVector = Icons.Filled.MusicNote,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(36.dp),
+                            tint = scheme.onSurfaceVariant,
+                            modifier = Modifier.size(48.dp),
                         )
                     }
                 }
@@ -1288,39 +1301,22 @@ private fun MusicNowPlayingCard(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = titleText,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false),
-                        )
-                        IconButton(
-                            onClick = onOpenMusicApp,
-                            colors = IconButtonDefaults.iconButtonColors(
-                                contentColor = MaterialTheme.colorScheme.primary,
-                            ),
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                                contentDescription = stringResource(R.string.dock_music),
-                                modifier = Modifier.size(22.dp),
-                            )
-                        }
-                    }
+                    Text(
+                        text = titleText,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.SemiBold,
+                        ),
+                        color = scheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                     Text(
                         text = subtitleText,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = if (!nowPlaying.notificationAccessEnabled) {
-                            MaterialTheme.colorScheme.primary
+                            scheme.primary
                         } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
+                            scheme.onSurfaceVariant
                         },
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
@@ -1330,131 +1326,138 @@ private fun MusicNowPlayingCard(
                     )
                 }
             }
-            val queueScroll = rememberScrollState()
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .verticalScroll(queueScroll),
-            ) {
-                if (nowPlaying.upNext.isNotEmpty() &&
-                    nowPlaying.hasActiveSession &&
-                    nowPlaying.notificationAccessEnabled
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .padding(bottom = 8.dp),
+
+            if (nowPlaying.hasActiveSession && nowPlaying.notificationAccessEnabled) {
+                if (hasUpNext) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Text(
                             text = stringResource(R.string.music_widget_up_next),
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = scheme.primary,
                         )
-                        Spacer(Modifier.height(6.dp))
-                        val playQueuedDesc = stringResource(R.string.music_widget_play_queued_track)
-                        nowPlaying.upNext.take(3).forEach { track ->
-                            val canPlay = track.queueId != QueueItem.UNKNOWN_ID.toLong()
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .semantics {
-                                        contentDescription = if (canPlay) {
-                                            "$playQueuedDesc. ${track.title}"
-                                        } else {
-                                            track.title
-                                        }
-                                    }
-                                    .clickable(
-                                        enabled = canPlay,
-                                        onClick = { onSkipToQueueItem(track.queueId) },
-                                    )
-                                    .padding(vertical = 6.dp, horizontal = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Text(
-                                    text = "\u2022",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = track.title,
-                                        style = MaterialTheme.typography.labelMedium,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        color = if (canPlay) {
-                                            MaterialTheme.colorScheme.onSurface
-                                        } else {
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                        },
-                                    )
-                                    if (track.subtitle != null) {
-                                        Text(
-                                            text = track.subtitle,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                    }
-                                }
-                            }
+                        Text(
+                            text = upNextTrack?.title.orEmpty(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = scheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+
+                val showProgress = nowPlaying.durationMs > 0L
+                if (showProgress) {
+                    val progress = (positionMs.toFloat() / nowPlaying.durationMs.toFloat())
+                        .coerceIn(0f, 1f)
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        LinearProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(3.dp)
+                                .clip(RoundedCornerShape(2.dp)),
+                            color = scheme.primary,
+                            trackColor = scheme.surfaceVariant,
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                text = formatTrackDuration(positionMs),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = scheme.onSurfaceVariant,
+                            )
+                            Text(
+                                text = formatTrackDuration(nowPlaying.durationMs),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = scheme.onSurfaceVariant,
+                            )
                         }
                     }
                 }
             }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 12.dp, top = 4.dp, end = 12.dp, bottom = 14.dp),
-                horizontalArrangement = Arrangement.Center,
+                    .padding(top = 4.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(
+                RoundMusicButton(
+                    icon = Icons.Filled.SkipPrevious,
+                    contentDescription = stringResource(R.string.music_widget_prev),
+                    size = 52.dp,
+                    iconSize = 36.dp,
                     onClick = onPrevious,
-                    modifier = Modifier.size(58.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.SkipPrevious,
-                        contentDescription = stringResource(R.string.music_widget_prev),
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(42.dp),
-                    )
-                }
-                Spacer(Modifier.size(12.dp))
-                IconButton(
+                    container = scheme.surfaceVariant,
+                    content = scheme.onSurface,
+                    enabled = nowPlaying.hasActiveSession && nowPlaying.notificationAccessEnabled,
+                )
+                RoundMusicButton(
+                    icon = if (nowPlaying.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                    contentDescription = stringResource(R.string.music_widget_play_pause),
+                    size = 72.dp,
+                    iconSize = 48.dp,
                     onClick = onPlayPause,
-                    modifier = Modifier.size(76.dp),
-                ) {
-                    Icon(
-                        imageVector = if (nowPlaying.isPlaying) {
-                            Icons.Filled.Pause
-                        } else {
-                            Icons.Filled.PlayArrow
-                        },
-                        contentDescription = stringResource(R.string.music_widget_play_pause),
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(54.dp),
-                    )
-                }
-                Spacer(Modifier.size(12.dp))
-                IconButton(
+                    container = scheme.primary,
+                    content = scheme.onPrimary,
+                    enabled = nowPlaying.notificationAccessEnabled,
+                )
+                RoundMusicButton(
+                    icon = Icons.Filled.SkipNext,
+                    contentDescription = stringResource(R.string.music_widget_next),
+                    size = 52.dp,
+                    iconSize = 36.dp,
                     onClick = onNext,
-                    modifier = Modifier.size(58.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.SkipNext,
-                        contentDescription = stringResource(R.string.music_widget_next),
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(42.dp),
-                    )
-                }
+                    container = scheme.surfaceVariant,
+                    content = scheme.onSurface,
+                    enabled = nowPlaying.hasActiveSession && nowPlaying.notificationAccessEnabled,
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun RoundMusicButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentDescription: String,
+    size: androidx.compose.ui.unit.Dp,
+    iconSize: androidx.compose.ui.unit.Dp,
+    onClick: () -> Unit,
+    container: androidx.compose.ui.graphics.Color,
+    content: androidx.compose.ui.graphics.Color,
+    enabled: Boolean,
+) {
+    val interaction = rememberSoftPressInteraction()
+    Box(
+        modifier = Modifier
+            .size(size)
+            .softPressScale(interaction)
+            .clip(CircleShape)
+            .background(if (enabled) container else container.copy(alpha = 0.45f))
+            .clickable(
+                enabled = enabled,
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = if (enabled) content else content.copy(alpha = 0.6f),
+            modifier = Modifier.size(iconSize),
+        )
     }
 }
 

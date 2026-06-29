@@ -29,6 +29,15 @@
     <string name="music_widget_prev">Önceki parça</string>
     <string name="music_widget_next">Sonraki parça</string>
     <string name="music_widget_play_pause">Oynat veya duraklat</string>
+    <string name="music_player_section_now_playing">Şu an çalıyor</string>
+    <string name="music_player_section_up_next">Sıradaki</string>
+    <string name="music_player_open_in_app">Müzik uygulamasını aç</string>
+    <string name="music_player_close">Player\'ı kapat</string>
+    <string name="music_player_empty_queue">Sırada bir şey yok</string>
+    <string name="music_player_no_session_title">Aktif oynatıcı yok</string>
+    <string name="music_player_no_session_body">Müzik uygulamasında çalmaya başlayın, burada görünsün.</string>
+    <string name="music_player_notification_required">Başlık ve albüm kapağı için bildirim erişimi gerekli.</string>
+    <string name="music_player_notification_action">Bildirim ayarlarını aç</string>
     <string name="volume_widget_title">Medya sesi</string>
     <string name="volume_widget_decrease">Sesi azalt</string>
     <string name="volume_widget_increase">Sesi artır</string>

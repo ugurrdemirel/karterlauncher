@@ -29,6 +29,15 @@
     <string name="music_widget_prev">Previous track</string>
     <string name="music_widget_next">Next track</string>
     <string name="music_widget_play_pause">Play or pause</string>
+    <string name="music_player_section_now_playing">Now playing</string>
+    <string name="music_player_section_up_next">Up next</string>
+    <string name="music_player_open_in_app">Open music app</string>
+    <string name="music_player_close">Close player</string>
+    <string name="music_player_empty_queue">Nothing queued</string>
+    <string name="music_player_no_session_title">No active player</string>
+    <string name="music_player_no_session_body">Start playback in any music app to see it here.</string>
+    <string name="music_player_notification_required">Allow notification access to see titles and album art.</string>
+    <string name="music_player_notification_action">Open notification settings</string>
     <string name="volume_widget_title">Media volume</string>
     <string name="volume_widget_decrease">Decrease volume</string>
     <string name="volume_widget_increase">Increase volume</string>

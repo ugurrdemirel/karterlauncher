@@ -33,6 +33,8 @@ import com.karterlauncher.ui.theme.prepareLauncherTheme
 class MainActivity : ComponentActivity() {
     private var appDrawerOpen = false
     private var closeAppDrawer: (() -> Unit)? = null
+    private var musicPlayerOpen = false
+    private var closeMusicPlayer: (() -> Unit)? = null
 
     private val homeBackCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
@@ -43,6 +45,12 @@ class MainActivity : ComponentActivity() {
     fun setAppDrawerController(isOpen: Boolean, onClose: (() -> Unit)?) {
         appDrawerOpen = isOpen
         closeAppDrawer = onClose
+        updateHomeBackCallback()
+    }
+
+    fun setMusicPlayerController(isOpen: Boolean, onClose: (() -> Unit)?) {
+        musicPlayerOpen = isOpen
+        closeMusicPlayer = onClose
         updateHomeBackCallback()
     }
 
@@ -116,6 +124,7 @@ class MainActivity : ComponentActivity() {
             intent.hasCategory(Intent.CATEGORY_HOME)
         ) {
             closeAppDrawer?.invoke()
+            closeMusicPlayer?.invoke()
         }
     }
 
@@ -126,6 +135,6 @@ class MainActivity : ComponentActivity() {
 
     private fun updateHomeBackCallback() {
         // Swallow back on the home screen when we are HOME and the app drawer is closed.
-        homeBackCallback.isEnabled = isOurAppDefaultHome() && !appDrawerOpen
+        homeBackCallback.isEnabled = isOurAppDefaultHome() && !appDrawerOpen && !musicPlayerOpen
     }
 }

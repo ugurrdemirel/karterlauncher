@@ -35,6 +35,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Map
@@ -140,14 +141,29 @@ fun LauncherScreen(
     }
 
     var showAppList by rememberSaveable { mutableStateOf(false) }
+    var showMusicPlayer by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(showAppList) {
         if (showAppList) {
             viewModel.refreshApps()
         }
     }
+    LaunchedEffect(showMusicPlayer) {
+        if (showMusicPlayer) {
+            viewModel.refreshNowPlaying()
+            viewModel.startPositionPolling()
+        } else {
+            viewModel.stopPositionPolling()
+        }
+    }
+    DisposableEffect(viewModel) {
+        onDispose { viewModel.stopPositionPolling() }
+    }
 
     BackHandler(showAppList) {
         showAppList = false
+    }
+    BackHandler(showMusicPlayer) {
+        showMusicPlayer = false
     }
 
     val context = LocalContext.current
@@ -157,10 +173,15 @@ fun LauncherScreen(
             isOpen = showAppList,
             onClose = { showAppList = false },
         )
+        activity?.setMusicPlayerController(
+            isOpen = showMusicPlayer,
+            onClose = { showMusicPlayer = false },
+        )
     }
     DisposableEffect(activity) {
         onDispose {
             activity?.setAppDrawerController(isOpen = false, onClose = null)
+            activity?.setMusicPlayerController(isOpen = false, onClose = null)
         }
     }
     val mapsDesc = remember(dockMaps) { dockContentDescription(context, dockMaps, R.string.dock_maps) }
@@ -195,8 +216,10 @@ fun LauncherScreen(
                 ) {
                     MainPanelContent(
                         showAppList = showAppList,
+                        showMusicPlayer = showMusicPlayer,
                         apps = apps,
                         viewModel = viewModel,
+                        onOpenMusicPlayer = { showMusicPlayer = true },
                         horizontalPadding = 8.dp,
                     )
                 }
@@ -209,11 +232,18 @@ fun LauncherScreen(
                     musicContentDescription = musicDesc,
                     phoneContentDescription = phoneDesc,
                     onMaps = { viewModel.openMapsFromDock() },
-                    onMusic = { viewModel.openMusicFromDock() },
+                    onMusic = {
+                        showMusicPlayer = !showMusicPlayer
+                        if (showAppList) showAppList = false
+                    },
                     onPhone = { viewModel.openPhoneFromDock() },
                     onSettings = { viewModel.openAppSettings() },
                     appListActive = showAppList,
-                    onToggleAppList = { showAppList = !showAppList },
+                    musicPlayerActive = showMusicPlayer,
+                    onToggleAppList = {
+                        showAppList = !showAppList
+                        if (showMusicPlayer) showMusicPlayer = false
+                    },
                 )
             }
         } else {
@@ -234,11 +264,18 @@ fun LauncherScreen(
                 musicContentDescription = musicDesc,
                 phoneContentDescription = phoneDesc,
                 onMaps = { viewModel.openMapsFromDock() },
-                onMusic = { viewModel.openMusicFromDock() },
+                onMusic = {
+                    showMusicPlayer = !showMusicPlayer
+                    if (showAppList) showAppList = false
+                },
                 onPhone = { viewModel.openPhoneFromDock() },
                 onSettings = { viewModel.openAppSettings() },
                 appListActive = showAppList,
-                onToggleAppList = { showAppList = !showAppList },
+                musicPlayerActive = showMusicPlayer,
+                onToggleAppList = {
+                    showAppList = !showAppList
+                    if (showMusicPlayer) showMusicPlayer = false
+                },
             )
 
             Row(modifier = Modifier.fillMaxSize()) {
@@ -267,8 +304,10 @@ fun LauncherScreen(
                 ) {
                     MainPanelContent(
                         showAppList = showAppList,
+                        showMusicPlayer = showMusicPlayer,
                         apps = apps,
                         viewModel = viewModel,
+                        onOpenMusicPlayer = { showMusicPlayer = true },
                         horizontalPadding = 8.dp,
                     )
                 }
@@ -288,8 +327,10 @@ fun LauncherScreen(
 @Composable
 private fun MainPanelContent(
     showAppList: Boolean,
+    showMusicPlayer: Boolean,
     apps: List<LaunchableApp>,
     viewModel: LauncherViewModel,
+    onOpenMusicPlayer: () -> Unit,
     horizontalPadding: Dp,
 ) {
     Column(
@@ -301,75 +342,106 @@ private fun MainPanelContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 20.dp),
+            trailing = if (showMusicPlayer) {
+                { OpenMusicAppAction(onClick = { viewModel.openMusicApp() }) }
+            } else {
+                null
+            },
         )
+        val panelState = when {
+            showMusicPlayer -> MainPanelState.MusicPlayer
+            showAppList -> MainPanelState.AppList
+            else -> MainPanelState.Dashboard
+        }
         AnimatedContent(
-            targetState = showAppList,
+            targetState = panelState,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
             transitionSpec = { LauncherMotion.panelContentTransform() },
             label = "mainPanel",
-        ) { showingApps ->
-            if (showingApps) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    Text(
-                        text = stringResource(R.string.apps_section),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
-                    )
-                    BoxWithConstraints(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                    ) {
-                        val minTile = AppGridMinTileWidth
-                        val columns = max(2, (maxWidth / minTile).toInt())
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(columns),
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(
-                                start = 16.dp,
-                                end = 16.dp,
-                                top = 8.dp,
-                                bottom = 16.dp,
-                            ),
-                            horizontalArrangement = Arrangement.spacedBy(18.dp),
-                            verticalArrangement = Arrangement.spacedBy(18.dp),
+        ) { state ->
+            when (state) {
+                MainPanelState.AppList -> {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            text = stringResource(R.string.apps_section),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
+                        )
+                        BoxWithConstraints(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
                         ) {
-                            items(
-                                items = apps,
-                                key = { it.componentName.flattenToString() },
-                            ) { app ->
-                                AppTile(
-                                    app = app,
-                                    onClick = { viewModel.openApp(app) },
-                                    modifier = Modifier.animateItem(
-                                        fadeInSpec = tween(220),
-                                        fadeOutSpec = tween(160),
-                                    ),
-                                )
+                            val minTile = AppGridMinTileWidth
+                            val columns = max(2, (maxWidth / minTile).toInt())
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(columns),
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    top = 8.dp,
+                                    bottom = 16.dp,
+                                ),
+                                horizontalArrangement = Arrangement.spacedBy(18.dp),
+                                verticalArrangement = Arrangement.spacedBy(18.dp),
+                            ) {
+                                items(
+                                    items = apps,
+                                    key = { it.componentName.flattenToString() },
+                                ) { app ->
+                                    AppTile(
+                                        app = app,
+                                        onClick = { viewModel.openApp(app) },
+                                        modifier = Modifier.animateItem(
+                                            fadeInSpec = tween(220),
+                                            fadeOutSpec = tween(160),
+                                        ),
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            } else {
-                val dashboardScroll = rememberScrollState()
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(dashboardScroll)
-                        .padding(bottom = 12.dp),
-                ) {
-                    HomeDashboard(
-                        viewModel = viewModel,
-                        modifier = Modifier.fillMaxWidth(),
+                MainPanelState.MusicPlayer -> {
+                    val nowPlaying by viewModel.nowPlaying.collectAsStateWithLifecycle()
+                    val positionMs by viewModel.positionMs.collectAsStateWithLifecycle()
+                    MusicPlayerScreen(
+                        nowPlaying = nowPlaying,
+                        positionMs = positionMs,
+                        onPrevious = { viewModel.mediaPrevious() },
+                        onPlayPause = { viewModel.mediaPlayPause() },
+                        onNext = { viewModel.mediaNext() },
+                        onStartPlayback = { viewModel.mediaPlay() },
+                        onSkipToQueueItem = { viewModel.skipToQueueItem(it) },
+                        onRequestNotificationAccess = { viewModel.openNotificationListenerSettings() },
+                        modifier = Modifier.fillMaxSize(),
                     )
+                }
+                MainPanelState.Dashboard -> {
+                    val dashboardScroll = rememberScrollState()
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(dashboardScroll)
+                            .padding(bottom = 12.dp),
+                    ) {
+                        HomeDashboard(
+                            viewModel = viewModel,
+                            onOpenMusicPlayer = onOpenMusicPlayer,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
             }
         }
     }
 }
+
+private enum class MainPanelState { Dashboard, AppList, MusicPlayer }
 
 @Composable
 private fun CompactBottomDock(
@@ -385,6 +457,7 @@ private fun CompactBottomDock(
     onPhone: () -> Unit,
     onSettings: () -> Unit,
     appListActive: Boolean,
+    musicPlayerActive: Boolean,
     onToggleAppList: () -> Unit,
 ) {
     Surface(
@@ -413,6 +486,7 @@ private fun CompactBottomDock(
                 defaultIcon = Icons.Filled.MusicNote,
                 contentDescription = musicContentDescription,
                 onClick = onMusic,
+                selected = musicPlayerActive,
             )
             if (phoneAvailable) {
                 DockRailSlot(
@@ -465,6 +539,7 @@ private data class DockRailProps(
     val onPhone: () -> Unit,
     val onSettings: () -> Unit,
     val appListActive: Boolean,
+    val musicPlayerActive: Boolean,
     val onToggleAppList: () -> Unit,
 )
 
@@ -508,6 +583,7 @@ private fun PinnedAppRail(
                     defaultIcon = Icons.Filled.MusicNote,
                     contentDescription = props.musicContentDescription,
                     onClick = props.onMusic,
+                    selected = props.musicPlayerActive,
                 )
                 if (props.phoneAvailable) {
                     DockRailSlot(
@@ -540,9 +616,20 @@ private fun DockRailSlot(
     defaultIcon: ImageVector,
     contentDescription: String,
     onClick: () -> Unit,
+    selected: Boolean = false,
 ) {
     val interaction = rememberSoftPressInteraction()
-    val bg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+    val targetBg =
+        if (selected) {
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+        }
+    val bg by animateColorAsState(
+        targetValue = targetBg,
+        animationSpec = tween(LauncherMotion.ColorFadeMs),
+        label = "dockSlotBg",
+    )
     val slotModifier =
         if (customPackage != null) {
             Modifier.semantics { this.contentDescription = contentDescription }
@@ -625,7 +712,10 @@ private fun PinnedRailIcon(
 }
 
 @Composable
-private fun TopStatusBar(modifier: Modifier = Modifier) {
+private fun TopStatusBar(
+    modifier: Modifier = Modifier,
+    trailing: (@Composable () -> Unit)? = null,
+) {
     val formatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
     var tick by remember { mutableIntStateOf(0) }
     val hasInternet = rememberHasValidatedInternet()
@@ -640,36 +730,80 @@ private fun TopStatusBar(modifier: Modifier = Modifier) {
     }
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.Start,
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = timeText,
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        AnimatedVisibility(
-            visible = !hasInternet,
-            enter = fadeIn(tween(220)) + scaleIn(initialScale = 0.9f, animationSpec = tween(220)),
-            exit = fadeOut(tween(160)) + scaleOut(targetScale = 0.92f, animationSpec = tween(160)),
-        ) {
-            Row {
-                Spacer(Modifier.width(12.dp))
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError,
-                ) {
-                    Text(
-                        text = stringResource(R.string.status_offline_badge),
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = timeText,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            AnimatedVisibility(
+                visible = !hasInternet,
+                enter = fadeIn(tween(220)) + scaleIn(initialScale = 0.9f, animationSpec = tween(220)),
+                exit = fadeOut(tween(160)) + scaleOut(targetScale = 0.92f, animationSpec = tween(160)),
+            ) {
+                Row {
+                    Spacer(Modifier.width(12.dp))
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.status_offline_badge),
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
         }
+        if (trailing != null) {
+            trailing()
+        }
+    }
+}
+
+@Composable
+private fun OpenMusicAppAction(
+    onClick: () -> Unit,
+) {
+    val interaction = rememberSoftPressInteraction()
+    val openInAppDesc = stringResource(R.string.music_player_open_in_app)
+    Row(
+        modifier = Modifier
+            .height(48.dp)
+            .softPressScale(interaction)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f))
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .semantics { contentDescription = openInAppDesc }
+            .padding(horizontal = 18.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(20.dp),
+        )
+        Text(
+            text = openInAppDesc,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

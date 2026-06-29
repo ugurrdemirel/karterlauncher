@@ -81,6 +81,8 @@ class LauncherViewModel(
 
     val nowPlaying: StateFlow<NowPlayingUi> = activeMediaRepository.nowPlaying
 
+    val positionMs: StateFlow<Long> = activeMediaRepository.positionMs
+
     val bluetoothState: StateFlow<BluetoothDashboardState> = bluetoothTracker.state
 
     val speedState: StateFlow<SpeedGaugeState> = speedometerRepository.state
@@ -91,6 +93,7 @@ class LauncherViewModel(
 
     init {
         refreshNowPlaying()
+        activeMediaRepository.startPositionPolling()
         bluetoothTracker.start()
         internetMonitor.start()
         screenInteractiveMonitor.start()
@@ -135,6 +138,7 @@ class LauncherViewModel(
     }
 
     override fun onCleared() {
+        activeMediaRepository.stopPositionPolling()
         bluetoothTracker.stop()
         speedometerRepository.stop()
         speedLimitService.destroy()
@@ -202,6 +206,14 @@ class LauncherViewModel(
         activeMediaRepository.attachActiveSessionsListener()
     }
 
+    fun startPositionPolling() {
+        activeMediaRepository.startPositionPolling()
+    }
+
+    fun stopPositionPolling() {
+        activeMediaRepository.stopPositionPolling()
+    }
+
     fun refreshBluetooth() {
         bluetoothTracker.refresh()
     }
@@ -213,6 +225,17 @@ class LauncherViewModel(
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 },
                 failureLabel = getApplication<Application>().getString(R.string.dock_settings),
+            )
+        }
+    }
+
+    fun openNotificationListenerSettings() {
+        viewModelScope.launch {
+            launchIntent(
+                Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                },
+                failureLabel = getApplication<Application>().getString(R.string.dock_music),
             )
         }
     }
@@ -486,6 +509,11 @@ class LauncherViewModel(
     /** Head-unit friendly: steers the active global media session when supported by the ROM. */
     fun mediaPlayPause() {
         dispatchMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
+    }
+
+    /** Ask the system to start playback: resumes a paused session, otherwise launches a player. */
+    fun mediaPlay() {
+        dispatchMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY)
     }
 
     fun mediaNext() {
