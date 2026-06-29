@@ -49,15 +49,22 @@ class SpeedLimitRepository {
     }
 
     private fun queryOnce(endpoint: String, query: String): SpeedLimitState {
-        val url = URL("$endpoint?data=${java.net.URLEncoder.encode(query, "UTF-8")}")
+        // Overpass resmi olarak karmaşık sorgular için POST öneriyor; bazı mirror'lar
+        // (örn. openstreetmap.fr) GET için 400 dönüyor. POST hem daha güvenilir hem
+        // URL uzunluğu sınırına takılmıyor.
+        val url = URL(endpoint)
+        val body = "data=${java.net.URLEncoder.encode(query, "UTF-8")}"
         val conn = (url.openConnection() as HttpURLConnection).apply {
             connectTimeout = CONNECT_TIMEOUT_MS
             readTimeout = READ_TIMEOUT_MS
-            requestMethod = "GET"
+            requestMethod = "POST"
+            doOutput = true
             setRequestProperty("User-Agent", USER_AGENT)
             setRequestProperty("Accept", "application/json")
+            setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
         }
         try {
+            conn.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
             val code = conn.responseCode
             if (code !in 200..299) {
                 throw java.io.IOException("HTTP $code from $endpoint")
@@ -71,8 +78,16 @@ class SpeedLimitRepository {
 
     private fun buildQuery(lat: Double, lon: Double, radius: Int): String =
         "[out:json][timeout:$QUERY_TIMEOUT_S];" +
-            "way(around:$radius,${"%.6f".format(lat)},${"%.6f".format(lon)})[\"highway\"];" +
+            "way(around:$radius,${formatCoord(lat)},${formatCoord(lon)})[\"highway\"];" +
             "out tags 1;"
+
+    /**
+     * Ondalık ayracı olarak **nokta** kullanır. Türkçe/almanca/fransızca gibi
+     * locale'lerde `String.format` varsayılan olarak virgül üretir; Overpass
+     * sorguyu polyline sanıp HTTP 400 döner.
+     */
+    private fun formatCoord(value: Double): String =
+        String.format(java.util.Locale.US, "%.6f", value)
 
     internal fun parseResponse(json: String): SpeedLimitState {
         val root = runCatching { JSONObject(json) }.getOrElse {
