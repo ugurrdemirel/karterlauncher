@@ -62,6 +62,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -803,7 +804,10 @@ fun AppSettingsScreen(
     }
 
     if (pickingSlot != null) {
-        val allApps = remember(pickingSlot) { viewModel.getAllLaunchableApps() }
+        var allApps by remember { mutableStateOf<List<LaunchableApp>>(emptyList()) }
+        LaunchedEffect(pickingSlot, viewModel) {
+            allApps = viewModel.getAllLaunchableApps()
+        }
         AppPickerDialog(
             apps = allApps,
             onDismiss = { pickingSlot = null },
@@ -987,7 +991,7 @@ private fun AppPickerDialog(
         title = { Text(stringResource(R.string.app_settings_pick_app_title)) },
         text = {
             LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
-                items(apps, key = { it.componentName.flattenToString() }) { app ->
+                items(apps, key = { it.packageName }) { app ->
                     ListItem(
                         headlineContent = {
                             Text(

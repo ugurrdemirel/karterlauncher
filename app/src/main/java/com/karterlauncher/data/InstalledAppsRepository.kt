@@ -5,13 +5,15 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import com.karterlauncher.model.LaunchableApp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class InstalledAppsRepository(
     private val context: Context,
 ) {
     private val packageManager: PackageManager = context.packageManager
 
-    fun getLaunchableApps(): List<LaunchableApp> {
+    suspend fun getLaunchableApps(): List<LaunchableApp> = withContext(Dispatchers.IO) {
         val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
         val infos = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             packageManager.queryIntentActivities(
@@ -24,8 +26,7 @@ class InstalledAppsRepository(
         }
 
         val self = context.packageName
-        return infos
-            .asSequence()
+        infos.asSequence()
             .mapNotNull { resolve -> resolve.toLaunchableAppOrNull() }
             .filter { it.packageName != self }
             .sortedBy { it.label.lowercase() }

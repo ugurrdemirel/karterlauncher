@@ -29,7 +29,9 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -63,20 +65,20 @@ fun HiddenAppsScreen(
     val installedRepo = remember { InstalledAppsRepository(context.applicationContext) }
     var allApps by remember { mutableStateOf<List<LaunchableApp>>(emptyList()) }
     var searchQuery by remember { mutableStateOf("") }
+    var reloadTick by remember { mutableIntStateOf(0) }
 
-    fun reloadApps() {
+    LaunchedEffect(reloadTick) {
         allApps = installedRepo.getLaunchableApps()
     }
 
     DisposableEffect(lifecycleOwner) {
-        reloadApps()
+        reloadTick++
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) reloadApps()
+            if (event == Lifecycle.Event.ON_RESUME) reloadTick++
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
-
     val filteredApps = remember(allApps, searchQuery) {
         val q = searchQuery.trim()
         if (q.isEmpty()) allApps

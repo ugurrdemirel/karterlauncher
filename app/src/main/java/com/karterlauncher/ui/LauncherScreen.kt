@@ -391,7 +391,7 @@ private fun MainPanelContent(
                             ) {
                                 items(
                                     items = apps,
-                                    key = { it.componentName.flattenToString() },
+                                    key = { it.packageName },
                                 ) { app ->
                                     AppTile(
                                         app = app,

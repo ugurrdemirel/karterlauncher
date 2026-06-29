@@ -66,6 +66,7 @@ class LauncherViewModel(
     private val internetConnectedTtsAnnouncer = InternetConnectedTtsAnnouncer(application)
     private val screenInteractiveMonitor = ScreenInteractiveMonitor(application)
     private val weatherRefreshMutex = Mutex()
+    private val appsRefreshMutex = Mutex()
 
     private val _apps = MutableStateFlow<List<LaunchableApp>>(emptyList())
     val apps: StateFlow<List<LaunchableApp>> = _apps.asStateFlow()
@@ -242,12 +243,14 @@ class LauncherViewModel(
 
     fun refreshApps() {
         viewModelScope.launch {
-            val hidden = userPreferencesRepository.hiddenAppPackagesFlow.first()
-            _apps.value = repository.getLaunchableApps().filter { it.packageName !in hidden }
+            appsRefreshMutex.withLock {
+                val hidden = userPreferencesRepository.hiddenAppPackagesFlow.first()
+                _apps.value = repository.getLaunchableApps().filter { it.packageName !in hidden }
+            }
         }
     }
 
-    fun getAllLaunchableApps(): List<LaunchableApp> = repository.getLaunchableApps()
+    suspend fun getAllLaunchableApps(): List<LaunchableApp> = repository.getLaunchableApps()
 
     fun setAppHidden(packageName: String, hidden: Boolean) {
         viewModelScope.launch {
